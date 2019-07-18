@@ -6,8 +6,10 @@ use App\User;
 use Validator;
 
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Permission;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
@@ -86,8 +88,15 @@ class AuthController extends Controller
      */
     public function getUser() {
         $user = Auth::user();
+        $userRoles = $user->roles->pluck('name');
+        if (!$userRoles->contains('Admin')) {
+            return response([
+                'error' => 'You are not permitted to view this resource'
+            ], Response::HTTP_UNAUTHORIZED);
+        }
         return response([
             'data' => $user
         ], Response::HTTP_OK);
     }
+
 }
